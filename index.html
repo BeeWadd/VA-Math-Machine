@@ -19,21 +19,520 @@
         },
       }
     </script>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/"
-  }
-}
-</script>
-<!-- Add Babel to transpile JSX in the browser -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://aistudiocdn.com/react@^19.1.1",
+          "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+          "react/": "https://aistudiocdn.com/react@^19.1.1/"
+        }
+      }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      @media print {
+        .print\:hidden { display: none !important; }
+        .print\:block { display: block !important; }
+      }
+    </style>
+  </head>
   <body class="bg-brand-light-gray">
     <div id="root"></div>
-    <!-- Changed type to "text/babel" and added data-type="module" for Babel to process it -->
-    <script type="text/babel" data-type="module" src="./index.tsx"></script>
+    <script type="text/babel" data-type="module">
+      import React from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      const { useState, useMemo, useEffect, useRef, StrictMode } = React;
+
+      // --- START: types ---
+      const Laterality = {
+        NONE: 'NONE',
+        LEFT: 'LEFT',
+        RIGHT: 'RIGHT',
+      };
+
+      const DependencyStatus = {
+        VETERAN_ONLY: 'VETERAN_ONLY',
+        VETERAN_WITH_SPOUSE: 'VETERAN_WITH_SPOUSE',
+        VETERAN_WITH_SPOUSE_AND_CHILD: 'VETERAN_WITH_SPOUSE_AND_CHILD',
+        VETERAN_WITH_CHILD: 'VETERAN_WITH_CHILD',
+        VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 'VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN',
+        VETERAN_WITH_TWO_CHILDREN: 'VETERAN_WITH_TWO_CHILDREN',
+      };
+      // --- END: types ---
+
+      // --- START: constants & data ---
+      const DEPENDENCY_OPTIONS = [
+        { value: DependencyStatus.VETERAN_ONLY, label: 'Veteran Only' },
+        { value: DependencyStatus.VETERAN_WITH_SPOUSE, label: 'Veteran with Spouse' },
+        { value: DependencyStatus.VETERAN_WITH_CHILD, label: 'Veteran with 1 Child' },
+        { value: DependencyStatus.VETERAN_WITH_SPOUSE_AND_CHILD, label: 'Veteran with Spouse & 1 Child' },
+        { value: DependencyStatus.VETERAN_WITH_TWO_CHILDREN, label: 'Veteran with 2 Children' },
+        { value: DependencyStatus.VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN, label: 'Veteran with Spouse & 2 Children' },
+      ];
+
+      const MENTAL_HEALTH_CONDITIONS = [
+          'Post-Traumatic Stress Disorder (PTSD)',
+          'Major Depressive Disorder',
+          'Generalized Anxiety Disorder',
+          'Somatic Symptom Disorder',
+          'Adjustment Disorder',
+          'Bipolar Disorder',
+      ];
+      
+      const compensationRates = {
+        10: { VETERAN_ONLY: 176.71, VETERAN_WITH_SPOUSE: 176.71, VETERAN_WITH_CHILD: 176.71, VETERAN_WITH_SPOUSE_AND_CHILD: 176.71, VETERAN_WITH_TWO_CHILDREN: 176.71, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 176.71 },
+        20: { VETERAN_ONLY: 349.32, VETERAN_WITH_SPOUSE: 349.32, VETERAN_WITH_CHILD: 349.32, VETERAN_WITH_SPOUSE_AND_CHILD: 349.32, VETERAN_WITH_TWO_CHILDREN: 349.32, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 349.32 },
+        30: { VETERAN_ONLY: 541.11, VETERAN_WITH_SPOUSE: 607.13, VETERAN_WITH_CHILD: 581.34, VETERAN_WITH_SPOUSE_AND_CHILD: 655.64, VETERAN_WITH_TWO_CHILDREN: 621.58, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 704.14 },
+        40: { VETERAN_ONLY: 779.45, VETERAN_WITH_SPOUSE: 864.07, VETERAN_WITH_CHILD: 827.95, VETERAN_WITH_SPOUSE_AND_CHILD: 919.80, VETERAN_WITH_TWO_CHILDREN: 876.46, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 975.53 },
+        50: { VETERAN_ONLY: 1109.57, VETERAN_WITH_SPOUSE: 1212.77, VETERAN_WITH_CHILD: 1166.33, VETERAN_WITH_SPOUSE_AND_CHILD: 1276.75, VETERAN_WITH_TWO_CHILDREN: 1223.09, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 1341.77 },
+        60: { VETERAN_ONLY: 1405.46, VETERAN_WITH_SPOUSE: 1527.24, VETERAN_WITH_CHILD: 1470.48, VETERAN_WITH_SPOUSE_AND_CHILD: 1599.48, VETERAN_WITH_TWO_CHILDREN: 1535.49, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 1671.72 },
+        70: { VETERAN_ONLY: 1771.20, VETERAN_WITH_SPOUSE: 1911.55, VETERAN_WITH_CHILD: 1844.47, VETERAN_WITH_SPOUSE_AND_CHILD: 1993.08, VETERAN_WITH_TWO_CHILDREN: 1917.74, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 2073.58 },
+        80: { VETERAN_ONLY: 2058.85, VETERAN_WITH_SPOUSE: 2217.78, VETERAN_WITH_CHILD: 2140.38, VETERAN_WITH_SPOUSE_AND_CHILD: 2307.56, VETERAN_WITH_TWO_CHILDREN: 2221.91, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 2396.31 },
+        90: { VETERAN_ONLY: 2313.65, VETERAN_WITH_SPOUSE: 2491.16, VETERAN_WITH_CHILD: 2403.44, VETERAN_WITH_SPOUSE_AND_CHILD: 2589.19, VETERAN_WITH_TWO_CHILDREN: 2493.22, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 2686.20 },
+        100: { VETERAN_ONLY: 3857.46, VETERAN_WITH_SPOUSE: 4072.53, VETERAN_WITH_CHILD: 3991.29, VETERAN_WITH_SPOUSE_AND_CHILD: 4225.65, VETERAN_WITH_TWO_CHILDREN: 4145.12, VETERAN_WITH_SPOUSE_AND_TWO_CHILDREN: 4378.77 },
+      };
+
+      const disabilityConditions = [
+        { name: 'Post-Traumatic Stress Disorder (PTSD)', ratings: [0, 10, 30, 50, 70, 100], description: 'Mental condition from a traumatic event' },{ name: 'Major Depressive Disorder', ratings: [0, 10, 30, 50, 70, 100], description: 'Persistent low mood and loss of interest' },{ name: 'Generalized Anxiety Disorder', ratings: [0, 10, 30, 50, 70, 100], description: 'Excessive, uncontrollable worry' },{ name: 'Somatic Symptom Disorder', ratings: [0, 10, 30, 50, 70, 100], description: 'Focus on physical symptoms causing distress' },{ name: 'Adjustment Disorder', ratings: [0, 10, 30, 50, 70, 100], description: 'Emotional/behavioral reaction to stress' },{ name: 'Bipolar Disorder', ratings: [0, 10, 30, 50, 70, 100], description: 'Extreme mood swings (mania and depression)' },{ name: 'Lumbosacral or Cervical Strain (Back/Neck Pain)', ratings: [10, 20, 30, 40, 50, 60, 100], description: 'Pain/stiffness in the lower back or neck' },{ name: 'Degenerative Arthritis', ratings: [10, 20], canBeBilateral: true, description: 'Joint pain from cartilage breakdown' },{ name: 'Intervertebral Disc Syndrome (IVDS)', ratings: [10, 20, 30, 40, 50, 60, 100], description: 'Back pain from damaged spinal discs' },{ name: 'Rheumatoid Arthritis', ratings: [10, 20, 40, 60, 100], description: 'Autoimmune joint inflammation' },{ name: 'Limitation of Motion of the Hip', ratings: [10, 20, 30, 40], canBeBilateral: true, description: 'Reduced range of motion in the hip joint' },{ name: 'Limitation of Flexion of the Knee', ratings: [0, 10, 20, 30], canBeBilateral: true, description: 'Difficulty bending the knee' },{ name: 'Limitation of Motion of the Ankle', ratings: [10, 20], canBeBilateral: true, description: 'Reduced range of motion in the ankle' },{ name: 'Limitation of Motion of the Shoulder', ratings: [10, 20, 30, 40], canBeBilateral: true, description: 'Difficulty moving the shoulder joint' },{ name: 'Limitation of Motion of the Elbow', ratings: [0, 10, 20, 30, 40, 50], canBeBilateral: true, description: 'Difficulty bending or straightening the elbow' },{ name: 'Limitation of Motion of the Wrist', ratings: [10, 20, 30, 40], canBeBilateral: true, description: 'Reduced range of motion in the wrist' },{ name: 'Plantar Fasciitis', ratings: [10, 20, 30, 40], canBeBilateral: true, description: 'Heel pain, especially in the morning' },{ name: 'Flatfoot (Pes Planus)', ratings: [0, 10, 20, 30, 50], canBeBilateral: true, description: 'Fallen arches in the feet' },{ name: 'Amputation below the knee', ratings: [40, 60], canBeBilateral: true, description: 'Surgical removal of leg below the knee' },{ name: 'Amputation above the knee', ratings: [60, 80, 90], canBeBilateral: true, description: 'Surgical removal of leg above the knee' },{ name: 'Migraine headaches', ratings: [0, 10, 30, 50], description: 'Severe, recurring headaches with other symptoms' },{ name: 'Sciatic Nerve Paralysis (Sciatica)', ratings: [10, 20, 40, 60, 80], canBeBilateral: true, description: 'Pain radiating along the sciatic nerve' },{ name: 'Peripheral Neuropathy', ratings: [10, 20, 30, 40], canBeBilateral: true, description: 'Nerve damage causing weakness, numbness, pain' },{ name: 'Radiculopathy (Cervical/Lumbar)', ratings: [10, 20, 30, 40], canBeBilateral: true, description: 'Pinched nerve in the spine' },{ name: 'Traumatic Brain Injury (TBI)', ratings: [0, 10, 40, 70, 100], description: 'Brain dysfunction caused by an external force' },{ name: 'Fibromyalgia', ratings: [10, 20, 40], description: 'Widespread musculoskeletal pain and fatigue' },{ name: 'Multiple Sclerosis (MS)', ratings: [30, 60, 100], description: 'Nerve damage disrupting brain-body communication' },{ name: 'Parkinson\'s Disease', ratings: [30, 100], description: 'Nervous system disorder affecting movement' },{ name: 'Tinnitus', ratings: [10], description: 'Ringing or buzzing in the ears' },{ name: 'Hearing Loss', ratings: [0, 10], canBeBilateral: true, description: 'Reduced ability to hear sounds' },{ name: 'Glaucoma', ratings: [10, 20, 40, 60], canBeBilateral: true, description: 'Eye condition damaging the optic nerve' },{ name: 'Cataracts, traumatic', ratings: [10, 20, 30, 40, 60], canBeBilateral: true, description: 'Clouding of the eye lens due to injury' },{ name: 'Blurry Vision (Loss of Visual Acuity)', ratings: [10, 20, 30, 40], canBeBilateral: true, description: 'Lack of sharpness in vision' },{ name: 'Sleep Apnea', ratings: [0, 30, 50, 100], description: 'Breathing repeatedly stops and starts during sleep' },{ name: 'Asthma', ratings: [10, 30, 60, 100], description: 'Airways narrow, swell, and produce extra mucus' },{ name: 'Chronic Bronchitis', ratings: [10, 30, 60, 100], description: 'Inflammation of the bronchial tubes' },{ name: 'Chronic Sinusitis', ratings: [0, 10, 30, 50], description: 'Long-term inflammation of the sinuses' },{ name: 'Allergic Rhinitis', ratings: [10, 30], description: 'Hay fever; nasal inflammation from allergens' },{ name: 'Hypertension (High Blood Pressure)', ratings: [10, 20, 40, 60], description: 'Force of blood against artery walls is too high' },{ name: 'Coronary Artery Disease (CAD)', ratings: [10, 30, 60, 100], description: 'Narrowing of arteries supplying blood to the heart' },{ name: 'Ischemic Heart Disease', ratings: [10, 30, 60, 100], description: 'Heart problems caused by narrowed arteries' },{ name: 'Gastroesophageal Reflux Disease (GERD)', ratings: [10, 30, 60], description: 'Stomach acid frequently flows back into the esophagus' },{ name: 'Irritable Bowel Syndrome (IBS)', ratings: [0, 10, 30], description: 'Intestinal disorder causing pain, gas, diarrhea, constipation' },{ name: 'Ulcerative Colitis', ratings: [10, 30, 60, 100], description: 'Inflammatory bowel disease causing ulcers in digestive tract' },{ name: 'Crohn\'s Disease', ratings: [10, 30, 60, 100], description: 'Inflammatory bowel disease affecting digestive tract lining' },{ name: 'Hemorrhoids', ratings: [0, 10, 20], description: 'Swollen veins in the anus and lower rectum' },{ name: 'Diabetes Mellitus (Type II)', ratings: [10, 20, 40, 60, 100], description: 'Body doesn\'t use insulin properly' },{ name: 'Thyroid Conditions (Hyper/Hypo)', ratings: [10, 30, 60, 100], description: 'Overactive or underactive thyroid gland' },{ name: 'Erectile Dysfunction (ED)', ratings: [0], description: 'Inability to get or keep an erection' },{ name: 'Kidney Disease (Nephritis)', ratings: [0, 30, 60, 80, 100], description: 'Inflammation of the kidneys' },{ name: 'Bladder Conditions (e.g., incontinence)', ratings: [10, 20, 40, 60], description: 'Issues with bladder control' },{ name: 'Dermatitis or Eczema', ratings: [0, 10, 30, 60], description: 'Skin inflammation causing itchiness and rashes' },{ name: 'Psoriasis', ratings: [0, 10, 30, 60], description: 'Skin cells build up and form itchy, dry patches' },{ name: 'Scars (painful or unstable)', ratings: [10, 20, 30, 40, 50], description: 'Painful, unstable, or disfiguring scars' },
+      ];
+      // --- END: constants & data ---
+
+      // --- START: hooks ---
+      const useVaCalculator = (disabilities, dependencyStatus) => {
+          const combineRatings = (r1, r2) => r1 + r2 * (1 - r1 / 100);
+          const normalizeNameForBilateralCheck = (name) => name.toLowerCase().replace(/\b(left|right|lft|rgt|l\b|r\b)\b/g, '').replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+          
+          return useMemo(() => {
+              const calculationSteps = [];
+              if (disabilities.length === 0) return { bilateralFactor: 0, combinedBodyRating: 0, finalRoundedRating: 0, monthlyCompensation: 0, calculationSteps: ["Add a disability rating to begin."] };
+              calculationSteps.push(`Starting calculation with ${disabilities.length} ratings.`);
+              const bilateralEligible = disabilities.filter(d => d.laterality === Laterality.LEFT || d.laterality === Laterality.RIGHT);
+              const nonBilateralRatings = disabilities.filter(d => d.laterality === Laterality.NONE).map(d => d.rating);
+              const groupedByName = {};
+              for (const disability of bilateralEligible) {
+                  const normalizedName = normalizeNameForBilateralCheck(disability.name);
+                  if (!groupedByName[normalizedName]) groupedByName[normalizedName] = [];
+                  groupedByName[normalizedName].push(disability);
+              }
+              const bilateralPairRatings = [];
+              Object.entries(groupedByName).forEach(([normalizedName, group]) => {
+                  const hasLeft = group.some(d => d.laterality === Laterality.LEFT);
+                  const hasRight = group.some(d => d.laterality === Laterality.RIGHT);
+                  if (hasLeft && hasRight) {
+                      const capitalizedPairName = normalizedName.charAt(0).toUpperCase() + normalizedName.slice(1);
+                      calculationSteps.push(`Found bilateral pair for: ${capitalizedPairName}.`);
+                      group.forEach(d => bilateralPairRatings.push(d.rating));
+                  } else {
+                      group.forEach(d => {
+                          const side = d.laterality.charAt(0) + d.laterality.slice(1).toLowerCase();
+                          calculationSteps.push(`Treating ${d.name} (${side}) as a non-bilateral rating as it has no pair.`);
+                          nonBilateralRatings.push(d.rating);
+                      });
+                  }
+              });
+              let bilateralCombined = 0;
+              let bilateralFactor = 0;
+              if (bilateralPairRatings.length > 0) {
+                  const sortedPairRatings = [...bilateralPairRatings].sort((a, b) => b - a);
+                  calculationSteps.push(`Combining bilateral pair ratings (${sortedPairRatings.join('%, ')}%) for bilateral factor.`);
+                  bilateralCombined = sortedPairRatings.reduce((acc, current) => combineRatings(acc, current), 0);
+                  calculationSteps.push(`Combined bilateral rating = ${bilateralCombined.toFixed(1)}%`);
+                  bilateralFactor = bilateralCombined * 0.1;
+                  calculationSteps.push(`Bilateral factor (10% of combined) = ${bilateralFactor.toFixed(1)}%`);
+              } else {
+                  calculationSteps.push("No bilateral pairs found. No bilateral factor to apply.");
+              }
+              const allRatings = [...nonBilateralRatings];
+              if (bilateralCombined > 0) allRatings.push(bilateralCombined);
+              if (bilateralFactor > 0) allRatings.push(bilateralFactor);
+              if (allRatings.length === 0) return { bilateralFactor: 0, combinedBodyRating: 0, finalRoundedRating: 0, monthlyCompensation: 0, calculationSteps: [...calculationSteps, "No ratings available for final combination."] };
+              allRatings.sort((a, b) => b - a);
+              calculationSteps.push(`Final ratings to combine (sorted): ${allRatings.map(r => r.toFixed(1)).join('%, ')}%`);
+              const combinedBodyRating = allRatings.reduce((acc, current) => combineRatings(acc, current), 0);
+              calculationSteps.push(`Combined Body Rating = ${combinedBodyRating.toFixed(1)}%`);
+              const finalRoundedRating = Math.round(combinedBodyRating / 10) * 10;
+              calculationSteps.push(`Rounding ${combinedBodyRating.toFixed(1)}% to the nearest 10% = ${finalRoundedRating}%`);
+              const monthlyCompensation = compensationRates[finalRoundedRating]?.[dependencyStatus] ?? 0;
+              calculationSteps.push(`Monthly compensation for ${finalRoundedRating}% rating: $${monthlyCompensation.toFixed(2)}`);
+              return { bilateralFactor, combinedBodyRating, finalRoundedRating, monthlyCompensation, calculationSteps };
+          }, [disabilities, dependencyStatus]);
+      };
+      // --- END: hooks ---
+
+      // --- START: UI Components ---
+      const Button = ({ children, variant = 'primary', className = '', ...props }) => {
+        const baseClasses = 'px-4 py-2 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
+        const variantClasses = {
+          primary: 'bg-brand-accent text-white hover:bg-blue-700 focus:ring-brand-accent',
+          secondary: 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-400',
+          danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+        };
+        return <button className={`${baseClasses} ${variantClasses[variant]} ${className}`} {...props}>{children}</button>;
+      };
+
+      const Card = ({ title, children, className }) => {
+        return (
+          <div className={`bg-white rounded-xl shadow-md overflow-hidden ${className}`}>
+            <div className="bg-gray-100 px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-brand-blue">{title}</h2>
+            </div>
+            <div className="p-6">{children}</div>
+          </div>
+        );
+      };
+
+      const Select = ({ label, children, ...props }) => {
+        return (
+          <div className="w-full">
+            {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
+            <select className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent sm:text-sm text-gray-900" {...props}>{children}</select>
+          </div>
+        );
+      };
+
+      const CustomSelect = ({ label, options, value, onChange, placeholder }) => {
+        const [isOpen, setIsOpen] = useState(false);
+        const [highlightedIndex, setHighlightedIndex] = useState(-1);
+        const wrapperRef = useRef(null);
+        const listRef = useRef(null);
+        const selectedOption = options.find(option => option.value === value);
+
+        useEffect(() => {
+          const handleClickOutside = (event) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) setIsOpen(false);
+          };
+          document.addEventListener('mousedown', handleClickOutside);
+          return () => document.removeEventListener('mousedown', handleClickOutside);
+        }, []);
+
+        useEffect(() => {
+          if (isOpen && listRef.current && highlightedIndex >= 0) {
+              const item = listRef.current.children[highlightedIndex];
+              item?.scrollIntoView({ block: 'nearest' });
+          }
+        }, [isOpen, highlightedIndex]);
+
+        const handleKeyDown = (e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              setIsOpen(prev => !prev);
+              if(!isOpen) setHighlightedIndex(options.findIndex(o => o.value === value));
+          }
+          if (e.key === 'Escape') setIsOpen(false);
+          if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              if(!isOpen) setIsOpen(true);
+              setHighlightedIndex(prev => (prev + 1) % options.length);
+          }
+          if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              if(!isOpen) setIsOpen(true);
+              setHighlightedIndex(prev => (prev - 1 + options.length) % options.length);
+          }
+          if (e.key === 'Enter' && isOpen && highlightedIndex >= 0) {
+              handleSelect(options[highlightedIndex]);
+          }
+        };
+
+        const handleSelect = (option) => {
+          onChange(option.value);
+          setIsOpen(false);
+          setHighlightedIndex(-1);
+          wrapperRef.current?.querySelector('button')?.focus();
+        };
+
+        return (
+          <div ref={wrapperRef} className="relative w-full">
+            <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+            <button type="button" className="relative w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-left cursor-default focus:outline-none focus:ring-1 focus:ring-brand-accent focus:border-brand-accent sm:text-sm" onClick={() => setIsOpen(!isOpen)} onKeyDown={handleKeyDown} aria-haspopup="listbox" aria-expanded={isOpen}>
+              <span className={`block truncate ${selectedOption ? 'text-gray-900' : 'text-gray-500'}`}>{selectedOption ? selectedOption.label : placeholder || 'Select an option'}</span>
+              <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"><svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" /></svg></span>
+            </button>
+            {isOpen && (
+              <ul ref={listRef} className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-96 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm" tabIndex={-1} role="listbox">
+                {options.map((option, index) => (
+                  <li key={option.value} className={`cursor-default select-none relative py-2 pl-3 pr-9 ${highlightedIndex === index ? 'text-white bg-brand-accent' : 'text-gray-900'}`} id={`option-${index}`} role="option" aria-selected={value === option.value} onClick={() => handleSelect(option)} onMouseEnter={() => setHighlightedIndex(index)}>
+                    <div className="flex flex-col">
+                      <span className="font-normal block truncate">{option.label}</span>
+                      {option.description && (<span className={`text-xs ${highlightedIndex === index ? 'text-blue-100' : 'text-gray-500'}`}>{option.description}</span>)}
+                    </div>
+                    {value === option.value && (<span className={`absolute inset-y-0 right-0 flex items-center pr-4 ${highlightedIndex === index ? 'text-white' : 'text-brand-accent'}`}><svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg></span>)}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      };
+      // --- END: UI Components ---
+
+      // --- START: Main Components ---
+      const Header = () => (
+        <header className="bg-brand-blue text-white shadow-lg">
+          <div className="container mx-auto px-4 py-6 lg:px-8">
+            <h1 className="text-3xl lg:text-4xl font-bold">VA Math Machine</h1>
+            <p className="mt-1 text-lg text-blue-200">Estimate your combined rating and monthly compensation.</p>
+          </div>
+        </header>
+      );
+
+      const Footer = () => (
+        <footer className="bg-white mt-12 py-6 border-t">
+          <div className="container mx-auto px-4 lg:px-8 text-center text-gray-500">
+            <p className="text-sm"><strong>Disclaimer:</strong> This calculator is an estimation tool and is not affiliated with the U.S. Department of Veterans' Affairs. It is based on publicly available VA regulations (38 CFR § 4.25 & 4.26) and compensation rates effective December 1, 2024. It is not an official VA tool and should not be considered a guarantee of benefits.</p>
+            <p className="text-sm mt-1">For official information, please consult the <a href="https://www.va.gov" target="_blank" rel="noopener noreferrer" className="text-brand-accent hover:underline">U.S. Department of Veterans Affairs</a>.</p>
+          </div>
+        </footer>
+      );
+      
+      const TrashIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>);
+
+      const DisabilityList = ({ disabilities, onRemoveDisability }) => {
+        if (disabilities.length === 0) return <p className="text-gray-500 text-center">No ratings added yet.</p>;
+        const getDisabilityDisplayName = (disability) => {
+          if (disability.laterality !== Laterality.NONE) {
+            const side = disability.laterality.charAt(0) + disability.laterality.slice(1).toLowerCase();
+            return `${disability.name} (${side})`;
+          }
+          return disability.name;
+        };
+        return (
+          <div className="space-y-3">
+            {disabilities.map((disability) => {
+              const displayName = getDisabilityDisplayName(disability);
+              return (
+                <div key={disability.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border">
+                  <div className="flex-grow">
+                    <p className="font-semibold text-gray-800">{displayName}</p>
+                    <div className="flex items-center mt-1"><span className="font-bold text-lg text-brand-blue">{disability.rating}%</span></div>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <Button variant="danger" onClick={() => onRemoveDisability(disability.id)} className="px-2 py-1 text-xs" aria-label={`Remove ${displayName} - ${disability.rating}% rating`}><TrashIcon /></Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      };
+      
+      const DependencySelector = ({ selectedStatus, onStatusChange }) => (
+        <div>
+          <Select label="Family Status" value={selectedStatus} onChange={(e) => onStatusChange(e.target.value)}>
+            {DEPENDENCY_OPTIONS.map((option) => (<option key={option.value} value={option.value}>{option.label}</option>))}
+          </Select>
+        </div>
+      );
+
+      const ResultsDisplay = ({ results, onReset }) => {
+        const { bilateralFactor, combinedBodyRating, finalRoundedRating, monthlyCompensation, calculationSteps } = results;
+        const handlePrint = () => window.print();
+        const ResultRow = ({ label, value, isPrimary = false }) => (<div className={`flex justify-between items-baseline ${isPrimary ? 'text-lg' : 'text-base'} py-2 border-b border-gray-200 last:border-b-0`}><span className="text-gray-600">{label}</span><span className={`font-bold ${isPrimary ? 'text-brand-blue' : 'text-gray-800'}`}>{value}</span></div>);
+        return (
+          <Card title="4. Your Estimated Benefits">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Monthly Payment</h3>
+                <div className="bg-brand-secondary text-brand-blue text-center p-6 rounded-lg">
+                  <p className="text-4xl lg:text-5xl font-extrabold">${monthlyCompensation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-lg font-semibold mt-1">per month</p>
+                </div>
+                <p className="text-xs text-gray-500 text-center mt-2">Based on VA compensation rates effective December 1, 2024.</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Rating Calculation</h3>
+                <div className="space-y-1">
+                  {bilateralFactor > 0 && <ResultRow label="Bilateral Factor" value={`${bilateralFactor.toFixed(1)}%`} />}
+                  <ResultRow label="Combined Body Rating" value={`${combinedBodyRating.toFixed(1)}%`} />
+                  <ResultRow label="Rounded VA Rating" value={`${finalRoundedRating}%`} isPrimary={true} />
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <Button onClick={onReset} variant="secondary" className="w-full">Reset</Button>
+                <Button onClick={handlePrint} variant="primary" className="w-full">Export as PDF</Button>
+              </div>
+              <details className="bg-gray-50 rounded-lg p-3">
+                <summary className="font-semibold text-gray-600 cursor-pointer">View Calculation Steps</summary>
+                <ul className="mt-2 text-sm text-gray-500 list-disc list-inside space-y-1">{calculationSteps.map((step, index) => <li key={index}>{step}</li>)}</ul>
+              </details>
+            </div>
+          </Card>
+        );
+      };
+
+      const DisabilityInputForm = ({ onAddDisability, existingDisabilities }) => {
+        const sortedConditions = useMemo(() => [...disabilityConditions].sort((a, b) => a.name.localeCompare(b.name)), []);
+        const [selectedConditionName, setSelectedConditionName] = useState('');
+        const [customConditionName, setCustomConditionName] = useState('');
+        const [selectedRating, setSelectedRating] = useState('');
+        const [selectedLaterality, setSelectedLaterality] = useState('');
+        const [error, setError] = useState(null);
+        const CUSTOM_CONDITION_VALUE = 'CUSTOM_CONDITION';
+        const isCustomMode = selectedConditionName === CUSTOM_CONDITION_VALUE;
+        const selectedCondition = useMemo(() => isCustomMode ? undefined : sortedConditions.find(c => c.name === selectedConditionName), [selectedConditionName, sortedConditions, isCustomMode]);
+        const conditionOptions = useMemo(() => [{ value: CUSTOM_CONDITION_VALUE, label: '-- Add a custom condition --', description: 'For conditions not listed below' }, ...sortedConditions.map(c => ({ value: c.name, label: c.name, description: c.description }))], [sortedConditions]);
+        
+        useEffect(() => {
+          setError(null);
+          if (!selectedConditionName) return;
+          const conditionNameForCheck = isCustomMode ? customConditionName.trim() : selectedConditionName;
+          if (!conditionNameForCheck && !isCustomMode) return;
+          const lateralityForCheck = selectedLaterality;
+          if (lateralityForCheck === '') return;
+          const isDuplicate = existingDisabilities.some(d => d.name === conditionNameForCheck && d.laterality === lateralityForCheck);
+          if (isDuplicate && lateralityForCheck !== Laterality.NONE) {
+            setError('This specific condition (with side) has already been added.');
+            return;
+          }
+          const isMentalHealthCondition = MENTAL_HEALTH_CONDITIONS.includes(conditionNameForCheck);
+          const hasExistingMentalHealth = existingDisabilities.some(d => MENTAL_HEALTH_CONDITIONS.includes(d.name));
+          if (isMentalHealthCondition && hasExistingMentalHealth) {
+            setError('Only one mental health condition can be rated. The VA combines them into a single rating.');
+            return;
+          }
+        }, [selectedConditionName, selectedLaterality, existingDisabilities, selectedCondition, customConditionName, isCustomMode]);
+
+        const handleConditionChange = (newConditionName) => {
+          setSelectedConditionName(newConditionName);
+          setSelectedRating('');
+          setCustomConditionName('');
+          if (newConditionName === CUSTOM_CONDITION_VALUE) {
+            setSelectedLaterality(Laterality.NONE);
+            return;
+          }
+          const condition = sortedConditions.find(c => c.name === newConditionName);
+          if (condition?.canBeBilateral) setSelectedLaterality('');
+          else setSelectedLaterality(Laterality.NONE);
+        };
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          if (error) return;
+          const name = isCustomMode ? customConditionName.trim() : selectedConditionName;
+          if (!name || !selectedRating || selectedLaterality === '') return;
+          onAddDisability({ name, rating: Number(selectedRating), laterality: selectedLaterality });
+          setSelectedConditionName('');
+          setSelectedRating('');
+          setSelectedLaterality('');
+          setCustomConditionName('');
+        };
+
+        const ratingOptions = useMemo(() => {
+          if (isCustomMode) return Array.from({ length: 11 }, (_, i) => i * 10);
+          return selectedCondition?.ratings ?? [];
+        }, [isCustomMode, selectedCondition]);
+
+        const isAddButtonDisabled = !!error || !selectedConditionName || !selectedRating || (isCustomMode && !customConditionName.trim()) || selectedLaterality === '';
+        
+        return (
+          <Card title="1. Add Disability Ratings">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div><CustomSelect label="Condition" options={conditionOptions} value={selectedConditionName} onChange={handleConditionChange} placeholder="Select a condition" /></div>
+              {isCustomMode && (
+                <div>
+                  <label htmlFor="custom-condition" className="block text-sm font-medium text-gray-700 mb-1">Custom Condition Name</label>
+                  <input type="text" id="custom-condition" value={customConditionName} onChange={(e) => setCustomConditionName(e.target.value)} className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent sm:text-sm text-gray-900" placeholder="e.g., Left Ankle Instability" required />
+                </div>
+              )}
+              <div>
+                <Select label="Rating" value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)} disabled={!selectedConditionName}>
+                  <option value="" disabled>Select a rating</option>
+                  {ratingOptions.map((rating) => (<option key={rating} value={rating}>{rating}%</option>))}
+                </Select>
+              </div>
+              {((!isCustomMode && selectedCondition?.canBeBilateral) || isCustomMode) && selectedConditionName && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Laterality (Side affected)</label>
+                  <div className="flex items-center space-x-6">
+                    {Object.values(Laterality).map(l => (
+                      <label key={l} className="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="laterality" value={l} checked={selectedLaterality === l} onChange={(e) => setSelectedLaterality(e.target.value)} className="h-4 w-4 text-brand-accent focus:ring-brand-accent border-gray-300" />
+                        <span className="text-gray-800">{l.charAt(0) + l.slice(1).toLowerCase()}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {error && (<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md" role="alert"><p className="font-bold">Cannot Add Condition</p><p className="text-sm">{error}</p></div>)}
+              <Button type="submit" className="w-full" disabled={isAddButtonDisabled}>Add Rating</Button>
+            </form>
+          </Card>
+        );
+      };
+
+      const PrintableReport = ({ disabilities, results, dependencyStatus }) => {
+        const dependencyLabel = DEPENDENCY_OPTIONS.find(opt => opt.value === dependencyStatus)?.label || 'Veteran Only';
+        const getDisabilityDisplayName = (disability) => {
+          if (disability.laterality !== Laterality.NONE) {
+            const side = disability.laterality.charAt(0) + disability.laterality.slice(1).toLowerCase();
+            return `${disability.name} (${side})`;
+          }
+          return disability.name;
+        };
+        return (
+          <div className="hidden print:block font-sans p-8">
+            <header className="mb-8 text-center border-b-2 border-gray-300 pb-4"><h1 className="text-3xl font-bold text-brand-blue">VA Math Machine Estimate</h1><p className="text-gray-600 mt-1">Generated on: {new Date().toLocaleDateString()}</p></header>
+            <main>
+              <section className="mb-8"><h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">Estimated Monthly Compensation</h2><div className="bg-brand-secondary text-brand-blue text-center p-6 rounded-lg border border-brand-accent"><p className="text-5xl font-extrabold">${results.monthlyCompensation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p><p className="text-lg font-semibold mt-1">per month</p></div><p className="text-sm text-gray-600 text-center mt-2">Based on a <span className="font-semibold">{results.finalRoundedRating}%</span> rating with status: <span className="font-semibold">{dependencyLabel}</span>.</p></section>
+              <section className="mb-8 p-4 border rounded-lg"><h2 className="text-xl font-semibold text-gray-800 mb-3">Calculation Summary</h2><div className="space-y-2 text-lg"><div className="flex justify-between items-baseline"><span>Combined Body Rating:</span><span className="font-bold">{results.combinedBodyRating.toFixed(1)}%</span></div>{results.bilateralFactor > 0 && (<div className="flex justify-between items-baseline"><span>Bilateral Factor Bonus:</span><span className="font-bold">{results.bilateralFactor.toFixed(1)}%</span></div>)}<div className="flex justify-between items-baseline pt-2 border-t mt-2"><span className="font-semibold text-brand-blue">Final VA Rating (Rounded):</span><span className="font-extrabold text-2xl text-brand-blue">{results.finalRoundedRating}%</span></div></div></section>
+              <section className="mb-8"><h2 className="text-xl font-semibold text-gray-800 mb-3">Your Disability Ratings</h2>{disabilities.length > 0 ? (<div className="border rounded-lg overflow-hidden"><table className="min-w-full divide-y divide-gray-200"><thead className="bg-gray-100"><tr><th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Condition</th><th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Rating</th></tr></thead><tbody className="bg-white divide-y divide-gray-200">{disabilities.map(d => (<tr key={d.id}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{getDisabilityDisplayName(d)}</td><td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-bold">{d.rating}%</td></tr>))}</tbody></table></div>) : (<p className="text-gray-500">No disabilities were added.</p>)}</section>
+              <section className="mb-8"><h2 className="text-xl font-semibold text-gray-800 mb-3">Calculation Breakdown</h2><div className="bg-gray-50 p-4 rounded-lg border"><ul className="text-sm text-gray-700 list-decimal list-inside space-y-1">{results.calculationSteps.map((step, index) => (<li key={index}>{step}</li>))}</ul></div></section>
+            </main>
+            <footer className="mt-12 pt-4 border-t text-xs text-gray-500 text-center"><p><strong>Disclaimer:</strong> This calculator is an estimation tool and is not affiliated with the U.S. Department of Veterans' Affairs. It is based on publicly available VA regulations (38 CFR § 4.25 & 4.26) and compensation rates effective December 1, 2024. It is not an official VA tool and should not be considered a guarantee of benefits. For official information, please consult the U.S. Department of Veterans Affairs at VA.gov.</p></footer>
+          </div>
+        );
+      };
+      // --- END: Main Components ---
+
+      // --- START: App ---
+      const App = () => {
+        const [disabilities, setDisabilities] = useState([]);
+        const [dependencyStatus, setDependencyStatus] = useState(DependencyStatus.VETERAN_ONLY);
+        const calculationResults = useVaCalculator(disabilities, dependencyStatus);
+
+        const handleAddDisability = (disability) => {
+          const newDisability = { ...disability, id: new Date().getTime().toString() };
+          setDisabilities([...disabilities, newDisability]);
+        };
+        const handleRemoveDisability = (id) => setDisabilities(disabilities.filter((d) => d.id !== id));
+        const handleReset = () => {
+            setDisabilities([]);
+            setDependencyStatus(DependencyStatus.VETERAN_ONLY);
+        };
+
+        return (
+          <>
+            <div className="bg-gray-50 min-h-screen font-sans print:hidden">
+              <Header />
+              <main className="container mx-auto px-4 py-8 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2 space-y-8">
+                    <DisabilityInputForm onAddDisability={handleAddDisability} existingDisabilities={disabilities} />
+                    <Card title="2. Your Added Ratings">
+                        <DisabilityList disabilities={disabilities} onRemoveDisability={handleRemoveDisability} />
+                    </Card>
+                    <Card title="3. Your Family Status">
+                      <DependencySelector selectedStatus={dependencyStatus} onStatusChange={setDependencyStatus} />
+                    </Card>
+                  </div>
+                  <div className="lg:col-span-1">
+                     <ResultsDisplay results={calculationResults} onReset={handleReset} />
+                  </div>
+                </div>
+              </main>
+              <Footer />
+            </div>
+            <PrintableReport disabilities={disabilities} results={calculationResults} dependencyStatus={dependencyStatus} />
+          </>
+        );
+      };
+      // --- END: App ---
+
+      // --- RENDER APP ---
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<StrictMode><App /></StrictMode>);
+
+    </script>
   </body>
 </html>
