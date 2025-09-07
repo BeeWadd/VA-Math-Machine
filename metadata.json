@@ -1,0 +1,5 @@
+{
+  "name": "VA Math Machine",
+  "description": "An advanced, static web application to calculate combined VA disability ratings and estimate monthly compensation based on official VA rules, including the bilateral factor.",
+  "requestFramePermissions": []
+}
