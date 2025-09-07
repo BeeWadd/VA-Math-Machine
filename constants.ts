@@ -1,4 +1,4 @@
-import { DependencyStatus } from './types';
+import { DependencyStatus } from './types.ts';
 
 export const DEPENDENCY_OPTIONS = [
   { value: DependencyStatus.VETERAN_ONLY, label: 'Veteran Only' },

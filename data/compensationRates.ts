@@ -1,4 +1,4 @@
-import { CompensationRates } from '../types';
+import { CompensationRates } from '../types.ts';
 
 // Based on VA compensation rates effective December 1, 2024 (for 2025)
 export const compensationRates: CompensationRates = {
