@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { Disability, DependencyStatus, CalculationResult, Laterality } from '../types.ts';
-import { compensationRates } from '../data/compensationRates.ts';
+import { Disability, DependencyStatus, CalculationResult, Laterality } from '../types';
+import { compensationRates } from '../data/compensationRates';
 
 // VA Math: Combines two ratings
 const combineRatings = (r1: number, r2: number): number => {

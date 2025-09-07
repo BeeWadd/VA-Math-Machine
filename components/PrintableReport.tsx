@@ -1,6 +1,6 @@
 import React from 'react';
-import { Disability, CalculationResult, DependencyStatus, Laterality } from '../types.ts';
-import { DEPENDENCY_OPTIONS } from '../constants.ts';
+import { Disability, CalculationResult, DependencyStatus, Laterality } from '../types';
+import { DEPENDENCY_OPTIONS } from '../constants';
 
 interface PrintableReportProps {
   disabilities: Disability[];

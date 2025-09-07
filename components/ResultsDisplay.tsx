@@ -1,7 +1,7 @@
 import React from 'react';
-import { CalculationResult } from '../types.ts';
-import Button from './ui/Button.tsx';
-import Card from './ui/Card.tsx';
+import { CalculationResult } from '../types';
+import Button from './ui/Button';
+import Card from './ui/Card';
 
 interface ResultsDisplayProps {
   results: CalculationResult;

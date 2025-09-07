@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Disability, DependencyStatus } from './types.ts';
-import { useVaCalculator } from './hooks/useVaCalculator.ts';
+import { Disability, DependencyStatus } from './types';
+import { useVaCalculator } from './hooks/useVaCalculator';
 
-import Header from './components/Header.tsx';
-import DisabilityInputForm from './components/DisabilityInputForm.tsx';
-import DisabilityList from './components/DisabilityList.tsx';
-import DependencySelector from './components/DependencySelector.tsx';
-import ResultsDisplay from './components/ResultsDisplay.tsx';
-import Footer from './components/Footer.tsx';
-import Card from './components/ui/Card.tsx';
-import PrintableReport from './components/PrintableReport.tsx';
+import Header from './components/Header';
+import DisabilityInputForm from './components/DisabilityInputForm';
+import DisabilityList from './components/DisabilityList';
+import DependencySelector from './components/DependencySelector';
+import ResultsDisplay from './components/ResultsDisplay';
+import Footer from './components/Footer';
+import Card from './components/ui/Card';
+import PrintableReport from './components/PrintableReport';
 
 
 const App: React.FC = () => {
