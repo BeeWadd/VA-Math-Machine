@@ -1,6 +1,6 @@
 import React from 'react';
-import { Disability, Laterality } from '../types';
-import Button from './ui/Button';
+import { Disability, Laterality } from '../types.ts';
+import Button from './ui/Button.tsx';
 
 interface DisabilityListProps {
   disabilities: Disability[];

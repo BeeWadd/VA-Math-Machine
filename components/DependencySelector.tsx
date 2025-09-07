@@ -1,8 +1,7 @@
-
 import React from 'react';
-import { DependencyStatus } from '../types';
-import { DEPENDENCY_OPTIONS } from '../constants';
-import Select from './ui/Select';
+import { DependencyStatus } from '../types.ts';
+import { DEPENDENCY_OPTIONS } from '../constants.ts';
+import Select from './ui/Select.tsx';
 
 interface DependencySelectorProps {
   selectedStatus: DependencyStatus;

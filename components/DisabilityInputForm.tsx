@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Disability, DisabilityCondition, Laterality } from '../types';
-import { disabilityConditions } from '../data/disabilityConditions';
-import { MENTAL_HEALTH_CONDITIONS } from '../constants';
-import Button from './ui/Button';
-import Select from './ui/Select';
-import Card from './ui/Card';
-import CustomSelect, { CustomSelectOption } from './ui/CustomSelect';
+import { Disability, DisabilityCondition, Laterality } from '../types.ts';
+import { disabilityConditions } from '../data/disabilityConditions.ts';
+import { MENTAL_HEALTH_CONDITIONS } from '../constants.ts';
+import Button from './ui/Button.tsx';
+import Select from './ui/Select.tsx';
+import Card from './ui/Card.tsx';
+import CustomSelect, { CustomSelectOption } from './ui/CustomSelect.tsx';
 
 interface DisabilityInputFormProps {
   onAddDisability: (disability: Omit<Disability, 'id'>) => void;

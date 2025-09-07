@@ -1,5 +1,4 @@
-
-import { DisabilityCondition } from '../types';
+import { DisabilityCondition } from '../types.ts';
 
 export const disabilityConditions: DisabilityCondition[] = [
   // Mental Health
