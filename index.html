@@ -182,8 +182,8 @@
 
       const Card = ({ title, children, className }) => {
         return (
-          <div className={`bg-white rounded-xl shadow-md overflow-hidden ${className}`}>
-            <div className="bg-gray-100 px-6 py-4 border-b border-gray-200">
+          <div className={`bg-white rounded-xl shadow-md ${className}`}>
+            <div className="bg-gray-100 px-6 py-4 border-b border-gray-200 rounded-t-xl">
               <h2 className="text-xl font-semibold text-brand-blue">{title}</h2>
             </div>
             <div className="p-6">{children}</div>
@@ -205,6 +205,7 @@
         const [highlightedIndex, setHighlightedIndex] = useState(-1);
         const wrapperRef = useRef(null);
         const listRef = useRef(null);
+        const buttonRef = useRef(null);
         const selectedOption = options.find(option => option.value === value);
 
         useEffect(() => {
@@ -214,6 +215,18 @@
           document.addEventListener('mousedown', handleClickOutside);
           return () => document.removeEventListener('mousedown', handleClickOutside);
         }, []);
+
+        useEffect(() => {
+          if (isOpen && listRef.current && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const DESKTOP_MAX_HEIGHT = 288; // Corresponds to max-h-72
+            const MIN_HEIGHT = 150;
+            const constrainedHeight = Math.min(DESKTOP_MAX_HEIGHT, spaceBelow - 20);
+            const finalHeight = Math.max(MIN_HEIGHT, constrainedHeight);
+            listRef.current.style.maxHeight = `${finalHeight}px`;
+          }
+        }, [isOpen]);
 
         useEffect(() => {
           if (isOpen && listRef.current && highlightedIndex >= 0) {
@@ -248,18 +261,18 @@
           onChange(option.value);
           setIsOpen(false);
           setHighlightedIndex(-1);
-          wrapperRef.current?.querySelector('button')?.focus();
+          buttonRef.current?.focus();
         };
 
         return (
           <div ref={wrapperRef} className="relative w-full">
             <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-            <button type="button" className="relative w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-left cursor-default focus:outline-none focus:ring-1 focus:ring-brand-accent focus:border-brand-accent sm:text-sm" onClick={() => setIsOpen(!isOpen)} onKeyDown={handleKeyDown} aria-haspopup="listbox" aria-expanded={isOpen}>
+            <button ref={buttonRef} type="button" className="relative w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-left cursor-default focus:outline-none focus:ring-1 focus:ring-brand-accent focus:border-brand-accent sm:text-sm" onClick={() => setIsOpen(!isOpen)} onKeyDown={handleKeyDown} aria-haspopup="listbox" aria-expanded={isOpen}>
               <span className={`block truncate ${selectedOption ? 'text-gray-900' : 'text-gray-500'}`}>{selectedOption ? selectedOption.label : placeholder || 'Select an option'}</span>
               <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"><svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" /></svg></span>
             </button>
             {isOpen && (
-              <ul ref={listRef} className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-96 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm" tabIndex={-1} role="listbox">
+              <ul ref={listRef} className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-72 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm" tabIndex={-1} role="listbox">
                 {options.map((option, index) => (
                   <li key={option.value} className={`cursor-default select-none relative py-2 pl-3 pr-9 ${highlightedIndex === index ? 'text-white bg-brand-accent' : 'text-gray-900'}`} id={`option-${index}`} role="option" aria-selected={value === option.value} onClick={() => handleSelect(option)} onMouseEnter={() => setHighlightedIndex(index)}>
                     <div className="flex flex-col">
