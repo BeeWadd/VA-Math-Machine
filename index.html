@@ -362,39 +362,107 @@
         </div>
       );
 
+      const PrintInstructionsModal = ({ onContinue, onClose }) => {
+        useEffect(() => {
+            const handleKeyDown = (e) => {
+                if (e.key === 'Escape') onClose();
+            };
+            document.body.style.overflow = 'hidden';
+            window.addEventListener('keydown', handleKeyDown);
+            return () => {
+                document.body.style.overflow = 'unset';
+                window.removeEventListener('keydown', handleKeyDown);
+            };
+        }, [onClose]);
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4" role="dialog" aria-modal="true" aria-labelledby="print-modal-title" onClick={onClose}>
+                <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative" role="document" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600" aria-label="Close">
+                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                    <h2 id="print-modal-title" className="text-xl font-bold text-brand-blue mb-4">How to Save as PDF on Mobile</h2>
+                    <div className="space-y-4 text-gray-700">
+                        <div>
+                            <h3 className="font-semibold text-gray-800">On iOS (iPhone/iPad):</h3>
+                            <ol className="list-decimal list-inside text-sm space-y-1 mt-1 pl-2">
+                                <li>After tapping "Continue," the print preview will appear.</li>
+                                <li>On the preview, use a <strong>zoom-out gesture</strong> (like un-pinching a photo).</li>
+                                <li>This converts it to a PDF. Tap the "Share" icon (a square with an arrow) to save it.</li>
+                            </ol>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-gray-800">On Android:</h3>
+                            <ol className="list-decimal list-inside text-sm space-y-1 mt-1 pl-2">
+                                <li>After tapping "Continue," tap the printer selection dropdown at the top.</li>
+                                <li>Choose <strong>"Save as PDF"</strong> from the list.</li>
+                                <li>Tap the round "PDF" download button to save.</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div className="mt-6 text-right">
+                        <Button onClick={onContinue}>Continue to Print</Button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
       const ResultsDisplay = ({ results, onReset }) => {
         const { bilateralFactor, combinedBodyRating, finalRoundedRating, monthlyCompensation, calculationSteps } = results;
-        const handlePrint = () => window.print();
+        const [showPrintModal, setShowPrintModal] = useState(false);
+        const isMobile = useMemo(() => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent), []);
+        
+        const handlePrintClick = () => {
+          if (isMobile) {
+            setShowPrintModal(true);
+          } else {
+            window.print();
+          }
+        };
+
+        const proceedToPrint = () => {
+          setShowPrintModal(false);
+          // A small delay can help mobile browsers render the UI change before freezing for the print dialog.
+          setTimeout(() => {
+            window.print();
+          }, 100);
+        };
+        
         const ResultRow = ({ label, value, isPrimary = false }) => (<div className={`flex justify-between items-baseline ${isPrimary ? 'text-lg' : 'text-base'} py-2 border-b border-gray-200 last:border-b-0`}><span className="text-gray-600">{label}</span><span className={`font-bold ${isPrimary ? 'text-brand-blue' : 'text-gray-800'}`}>{value}</span></div>);
+        
         return (
-          <Card title="4. Your Estimated Benefits">
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Monthly Payment</h3>
-                <div className="bg-brand-secondary text-brand-blue text-center p-6 rounded-lg">
-                  <p className="text-4xl lg:text-5xl font-extrabold">${monthlyCompensation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                  <p className="text-lg font-semibold mt-1">per month</p>
+          <>
+            <Card title="4. Your Estimated Benefits">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Monthly Payment</h3>
+                  <div className="bg-brand-secondary text-brand-blue text-center p-6 rounded-lg">
+                    <p className="text-4xl lg:text-5xl font-extrabold">${monthlyCompensation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className="text-lg font-semibold mt-1">per month</p>
+                  </div>
+                  <p className="text-xs text-gray-500 text-center mt-2">Based on VA compensation rates effective December 1, 2024.</p>
                 </div>
-                <p className="text-xs text-gray-500 text-center mt-2">Based on VA compensation rates effective December 1, 2024.</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Rating Calculation</h3>
-                <div className="space-y-1">
-                  {bilateralFactor > 0 && <ResultRow label="Bilateral Factor" value={`${bilateralFactor.toFixed(1)}%`} />}
-                  <ResultRow label="Combined Body Rating" value={`${combinedBodyRating.toFixed(1)}%`} />
-                  <ResultRow label="Rounded VA Rating" value={`${finalRoundedRating}%`} isPrimary={true} />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Rating Calculation</h3>
+                  <div className="space-y-1">
+                    {bilateralFactor > 0 && <ResultRow label="Bilateral Factor" value={`${bilateralFactor.toFixed(1)}%`} />}
+                    <ResultRow label="Combined Body Rating" value={`${combinedBodyRating.toFixed(1)}%`} />
+                    <ResultRow label="Rounded VA Rating" value={`${finalRoundedRating}%`} isPrimary={true} />
+                  </div>
                 </div>
+                <div className="flex space-x-2">
+                  <Button onClick={onReset} variant="secondary" className="w-full">Reset</Button>
+                  <Button onClick={handlePrintClick} variant="primary" className="w-full">Print / Save Results</Button>
+                </div>
+                <details className="bg-gray-50 rounded-lg p-3">
+                  <summary className="font-semibold text-gray-600 cursor-pointer">View Calculation Steps</summary>
+                  <ul className="mt-2 text-sm text-gray-500 list-disc list-inside space-y-1">{calculationSteps.map((step, index) => <li key={index}>{step}</li>)}</ul>
+                </details>
               </div>
-              <div className="flex space-x-2">
-                <Button onClick={onReset} variant="secondary" className="w-full">Reset</Button>
-                <Button onClick={handlePrint} variant="primary" className="w-full">Export as PDF</Button>
-              </div>
-              <details className="bg-gray-50 rounded-lg p-3">
-                <summary className="font-semibold text-gray-600 cursor-pointer">View Calculation Steps</summary>
-                <ul className="mt-2 text-sm text-gray-500 list-disc list-inside space-y-1">{calculationSteps.map((step, index) => <li key={index}>{step}</li>)}</ul>
-              </details>
-            </div>
-          </Card>
+            </Card>
+            {showPrintModal && <PrintInstructionsModal onContinue={proceedToPrint} onClose={() => setShowPrintModal(false)} />}
+          </>
         );
       };
 
