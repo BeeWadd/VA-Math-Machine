@@ -422,8 +422,8 @@
         };
 
         const proceedToPrint = () => {
-          setShowPrintModal(false);
           window.print();
+          setShowPrintModal(false);
         };
         
         const ResultRow = ({ label, value, isPrimary = false }) => (<div className={`flex justify-between items-baseline ${isPrimary ? 'text-lg' : 'text-base'} py-2 border-b border-gray-200 last:border-b-0`}><span className="text-gray-600">{label}</span><span className={`font-bold ${isPrimary ? 'text-brand-blue' : 'text-gray-800'}`}>{value}</span></div>);
