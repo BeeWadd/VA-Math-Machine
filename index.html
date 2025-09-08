@@ -281,19 +281,20 @@
         <header className="bg-brand-blue text-white shadow-lg">
           <div className="container mx-auto px-4 py-6 lg:px-8 flex justify-between items-center">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold">VA Math Machine</h1>
-              <p className="mt-1 text-lg text-blue-200">Estimate your combined rating and monthly compensation.</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">VA Math Machine</h1>
+              <p className="mt-1 text-base sm:text-lg text-blue-200">Estimate your combined rating and monthly compensation.</p>
             </div>
             <div>
               <a
                 href="https://buymeacoffee.com/vamathmachine"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-blue-200 hover:bg-white hover:text-brand-blue text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                className="border border-blue-200 hover:bg-white hover:text-brand-blue text-white font-bold py-2 px-3 sm:px-4 rounded-lg transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
                 title="If this tool helped you, consider supporting the developer."
                 aria-label="Support this tool by making a donation"
               >
-                Support this tool
+                <span className="sm:hidden">Support</span>
+                <span className="hidden sm:inline">Support this tool</span>
               </a>
             </div>
           </div>
