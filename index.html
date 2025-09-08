@@ -602,8 +602,16 @@
                   pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
                   heightLeft -= pdfHeight;
               }
+              
+              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-              pdf.save('VA-Disability-Estimate.pdf');
+              if (isMobile) {
+                // For mobile, open in a new tab where users can use native save/share features.
+                pdf.output('dataurlnewwindow');
+              } else {
+                // For desktop, trigger a direct download.
+                pdf.save('VA-Disability-Estimate.pdf');
+              }
 
           } catch (error) {
               console.error("Failed to generate PDF:", error);
