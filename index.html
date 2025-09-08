@@ -38,11 +38,10 @@
       }
     </script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBL5gI9kLAbk3DVeG6eRTPoZlowQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
-      @media print {
-        .print\:hidden { display: none !important; }
-        .print\:block { display: block !important; }
-      }
+      /* No custom styles needed for this version. */
     </style>
   </head>
   <body class="bg-brand-light-gray">
@@ -362,13 +361,17 @@
         </div>
       );
 
-      const ResultsDisplay = ({ results, onReset }) => {
-        const { bilateralFactor, combinedBodyRating, finalRoundedRating, monthlyCompensation, calculationSteps } = results;
+      const ResultsDisplay = ({ results, onReset, onDownload, isDownloading }) => {
+        const { combinedBodyRating, finalRoundedRating, monthlyCompensation, calculationSteps } = results;
         
-        const handlePrintClick = () => {
-          window.print();
-        };
-        
+        const DownloadIcon = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+        );
+
         const ResultRow = ({ label, value, isPrimary = false }) => (<div className={`flex justify-between items-baseline ${isPrimary ? 'text-lg' : 'text-base'} py-2 border-b border-gray-200 last:border-b-0`}><span className="text-gray-600">{label}</span><span className={`font-bold ${isPrimary ? 'text-brand-blue' : 'text-gray-800'}`}>{value}</span></div>);
         
         return (
@@ -385,14 +388,26 @@
               <div>
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">Rating Calculation</h3>
                 <div className="space-y-1">
-                  {bilateralFactor > 0 && <ResultRow label="Bilateral Factor" value={`${bilateralFactor.toFixed(1)}%`} />}
+                  {results.bilateralFactor > 0 && <ResultRow label="Bilateral Factor" value={`${results.bilateralFactor.toFixed(1)}%`} />}
                   <ResultRow label="Combined Body Rating" value={`${combinedBodyRating.toFixed(1)}%`} />
                   <ResultRow label="Rounded VA Rating" value={`${finalRoundedRating}%`} isPrimary={true} />
                 </div>
               </div>
               <div className="flex space-x-2">
                 <Button onClick={onReset} variant="secondary" className="w-full">Reset</Button>
-                <Button onClick={handlePrintClick} variant="primary" className="w-full">Print / Save Results</Button>
+                <Button onClick={onDownload} variant="primary" className="w-full flex items-center justify-center" disabled={isDownloading}>
+                    {isDownloading ? (
+                        <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <span>Downloading...</span>
+                        </>
+                    ) : (
+                        <>
+                            <DownloadIcon />
+                            <span>Download as PDF</span>
+                        </>
+                    )}
+                </Button>
               </div>
               <details className="bg-gray-50 rounded-lg p-3">
                 <summary className="font-semibold text-gray-600 cursor-pointer">View Calculation Steps</summary>
@@ -513,7 +528,7 @@
           return disability.name;
         };
         return (
-          <div className="hidden print:block font-sans p-8">
+          <div id="printable-report" className="font-sans p-8 bg-white" style={{ position: 'absolute', top: 0, left: '-9999px', zIndex: -1, width: '210mm' }}>
             <header className="mb-8 text-center border-b-2 border-gray-300 pb-4"><h1 className="text-3xl font-bold text-brand-blue">VA Math Machine Estimate</h1><p className="text-gray-600 mt-1">Generated on: {new Date().toLocaleDateString()}</p></header>
             <main>
               <section className="mb-8"><h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">Estimated Monthly Compensation</h2><div className="bg-brand-secondary text-brand-blue text-center p-6 rounded-lg border border-brand-accent"><p className="text-5xl font-extrabold">${results.monthlyCompensation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p><p className="text-lg font-semibold mt-1">per month</p></div><p className="text-sm text-gray-600 text-center mt-2">Based on a <span className="font-semibold">{results.finalRoundedRating}%</span> rating with status: <span className="font-semibold">{dependencyLabel}</span>.</p></section>
@@ -531,6 +546,7 @@
       const App = () => {
         const [disabilities, setDisabilities] = useState([]);
         const [dependencyStatus, setDependencyStatus] = useState(DependencyStatus.VETERAN_ONLY);
+        const [isDownloading, setIsDownloading] = useState(false);
         const calculationResults = useVaCalculator(disabilities, dependencyStatus);
 
         const handleAddDisability = (disability) => {
@@ -543,9 +559,63 @@
             setDependencyStatus(DependencyStatus.VETERAN_ONLY);
         };
 
+        const handleDownloadPdf = async () => {
+          const reportElement = document.getElementById('printable-report');
+          if (!reportElement) {
+              console.error('Printable report element not found!');
+              alert('An error occurred. Could not find the report content to download.');
+              return;
+          }
+
+          setIsDownloading(true);
+          try {
+              const { jsPDF } = window.jspdf;
+              const canvas = await window.html2canvas(reportElement, {
+                  scale: 2, // Higher scale for better quality
+                  useCORS: true,
+                  logging: false,
+              });
+
+              const imgData = canvas.toDataURL('image/png');
+              const pdf = new jsPDF({
+                  orientation: 'portrait',
+                  unit: 'mm',
+                  format: 'a4',
+              });
+
+              const pdfWidth = pdf.internal.pageSize.getWidth();
+              const pdfHeight = pdf.internal.pageSize.getHeight();
+              const canvasWidth = canvas.width;
+              const canvasHeight = canvas.height;
+              const ratio = canvasWidth / pdfWidth;
+              const imgHeight = canvasHeight / ratio;
+
+              let heightLeft = imgHeight;
+              let position = 0;
+
+              pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+              heightLeft -= pdfHeight;
+
+              while (heightLeft > 0) {
+                  position = heightLeft - imgHeight;
+                  pdf.addPage();
+                  pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                  heightLeft -= pdfHeight;
+              }
+
+              pdf.save('VA-Disability-Estimate.pdf');
+
+          } catch (error) {
+              console.error("Failed to generate PDF:", error);
+              alert('Sorry, there was an error creating the PDF. Please try again.');
+          } finally {
+              setIsDownloading(false);
+          }
+        };
+
         return (
           <>
-            <div className="bg-gray-50 min-h-screen font-sans print:hidden">
+            <div className="bg-gray-50 min-h-screen font-sans">
               <Header />
               <main className="container mx-auto px-4 py-8 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -559,7 +629,12 @@
                     </Card>
                   </div>
                   <div className="lg:col-span-1">
-                     <ResultsDisplay results={calculationResults} onReset={handleReset} />
+                     <ResultsDisplay 
+                        results={calculationResults} 
+                        onReset={handleReset}
+                        onDownload={handleDownloadPdf}
+                        isDownloading={isDownloading}
+                      />
                   </div>
                 </div>
               </main>
