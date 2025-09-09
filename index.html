@@ -159,8 +159,10 @@
               calculationSteps.push(`Final ratings to combine (sorted): ${allRatings.map(r => r.toFixed(1)).join('%, ')}%`);
               const combinedBodyRating = allRatings.reduce((acc, current) => combineRatings(acc, current), 0);
               calculationSteps.push(`Combined Body Rating = ${combinedBodyRating.toFixed(1)}%`);
-              const finalRoundedRating = Math.round(combinedBodyRating / 10) * 10;
-              calculationSteps.push(`Rounding ${combinedBodyRating.toFixed(1)}% to the nearest 10% = ${finalRoundedRating}%`);
+              const intermediateRounding = Math.round(combinedBodyRating);
+              calculationSteps.push(`Rounding ${combinedBodyRating.toFixed(1)}% to the nearest integer = ${intermediateRounding}%`);
+              const finalRoundedRating = Math.round(intermediateRounding / 10) * 10;
+              calculationSteps.push(`Rounding ${intermediateRounding}% to the nearest 10% = ${finalRoundedRating}%`);
               const monthlyCompensation = compensationRates[finalRoundedRating]?.[dependencyStatus] ?? 0;
               calculationSteps.push(`Monthly compensation for ${finalRoundedRating}% rating: $${monthlyCompensation.toFixed(2)}`);
               return { bilateralFactor, combinedBodyRating, finalRoundedRating, monthlyCompensation, calculationSteps };
