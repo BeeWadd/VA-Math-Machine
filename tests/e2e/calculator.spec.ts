@@ -1,13 +1,18 @@
 import { expect, test, type Page } from '@playwright/test';
 
+async function openCalculator(page: Page) {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'VA Math Machine', exact: true })).toBeVisible();
+}
+
 async function addRating(page: Page, percentage: number, label: string) {
-  await page.getByLabel('Condition label (optional)').fill(label);
-  await page.getByLabel('Assigned rating').selectOption(String(percentage));
+  await page.getByLabel('Condition label (optional)', { exact: true }).fill(label);
+  await page.getByLabel('Assigned rating', { exact: true }).selectOption(String(percentage));
   await page.getByRole('button', { name: 'Add rating' }).click();
 }
 
 test('calculates the canonical Table I sequence', async ({ page }) => {
-  await page.goto('/');
+  await openCalculator(page);
   await addRating(page, 90, 'First');
   await addRating(page, 30, 'Second');
   await addRating(page, 10, 'Third');
@@ -19,20 +24,20 @@ test('calculates the canonical Table I sequence', async ({ page }) => {
 });
 
 test('applies the bilateral factor before combining with other ratings', async ({ page }) => {
-  await page.goto('/');
-  await page.getByLabel('Condition label (optional)').fill('Left leg');
-  await page.getByLabel('Assigned rating').selectOption('10');
-  await page.getByLabel('Category').selectOption('lower');
-  await page.getByLabel('Affected side').selectOption('left');
+  await openCalculator(page);
+  await page.getByLabel('Condition label (optional)', { exact: true }).fill('Left leg');
+  await page.getByLabel('Assigned rating', { exact: true }).selectOption('10');
+  await page.getByLabel('Category', { exact: true }).selectOption('lower');
+  await page.getByLabel('Affected side', { exact: true }).selectOption('left');
   await page.getByRole('button', { name: 'Add rating' }).click();
 
-  await page.getByLabel('Condition label (optional)').fill('Right leg');
-  await page.getByLabel('Affected side').selectOption('right');
+  await page.getByLabel('Condition label (optional)', { exact: true }).fill('Right leg');
+  await page.getByLabel('Affected side', { exact: true }).selectOption('right');
   await page.getByRole('button', { name: 'Add rating' }).click();
 
-  await page.getByLabel('Condition label (optional)').fill('Other');
-  await page.getByLabel('Assigned rating').selectOption('30');
-  await page.getByLabel('Category').selectOption('none');
+  await page.getByLabel('Condition label (optional)', { exact: true }).fill('Other');
+  await page.getByLabel('Assigned rating', { exact: true }).selectOption('30');
+  await page.getByLabel('Category', { exact: true }).selectOption('none');
   await page.getByRole('button', { name: 'Add rating' }).click();
 
   const result = page.getByRole('region', { name: 'Estimated result' });
@@ -47,7 +52,7 @@ test('keeps a sensitive input canary out of all requests and print paths', async
     requests.push(`${request.url()} ${request.postData() ?? ''}`);
   });
 
-  await page.goto('/');
+  await openCalculator(page);
   await addRating(page, 30, canary);
   await page.evaluate(() => {
     window.print = () => undefined;
@@ -61,7 +66,7 @@ test('keeps a sensitive input canary out of all requests and print paths', async
 
 test('reflows at 320 CSS pixels without horizontal scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 568 });
-  await page.goto('/');
+  await openCalculator(page);
 
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
@@ -71,7 +76,7 @@ test('reflows at 320 CSS pixels without horizontal scrolling', async ({ page }) 
 });
 
 test('print media exposes the result and hides entry controls', async ({ page }) => {
-  await page.goto('/');
+  await openCalculator(page);
   await addRating(page, 50, 'Printable rating');
   await page.emulateMedia({ media: 'print' });
 
@@ -85,7 +90,7 @@ test('has one primary landmark of each page type and no console errors', async (
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text());
   });
-  await page.goto('/');
+  await openCalculator(page);
 
   await expect(page.getByRole('banner')).toHaveCount(1);
   await expect(page.getByRole('main')).toHaveCount(1);
