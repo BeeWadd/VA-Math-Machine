@@ -6,6 +6,7 @@ import {
 } from '../data/compensation-2026';
 import {
   calculateCombinedRating,
+  MAX_BILATERAL_RATINGS,
   type BilateralLocation,
   type DisabilityRating,
 } from './ratings';
@@ -31,6 +32,8 @@ export interface Dependents {
 }
 
 export const RATE_METADATA = COMPENSATION_2026_METADATA;
+export const MAX_BILATERAL_ENTRIES = MAX_BILATERAL_RATINGS;
+export const isRateReviewDue = isCompensationRateReviewDue;
 
 function bilateralFor(entry: CalculatorEntry): BilateralLocation | undefined {
   if (entry.side === 'none' || entry.bilateralCategory === 'none') return undefined;

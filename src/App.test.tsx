@@ -1,12 +1,16 @@
 import { run as runAxe } from 'axe-core';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 
 describe('calculator interface', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('starts in a truthful empty state with print disabled', () => {
@@ -16,6 +20,16 @@ describe('calculator interface', () => {
     expect(screen.getByText('No estimate is available until at least one rating is added.')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Print or save as PDF' })).toBeDisabled();
     expect(screen.queryByText('$0.00')).not.toBeInTheDocument();
+  });
+
+  it('uses the same UTC rate-review boundary for the warning and payment gate', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-12-01T00:30:00Z'));
+    render(<App />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Compensation data reached its scheduled review date',
+    );
   });
 
   it('adds a rating, calculates current compensation, and prints once', async () => {

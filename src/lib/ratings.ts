@@ -32,6 +32,8 @@ export interface CombinedRatingResult extends CalculationAlternative {
   defaultBilateral?: CalculationAlternative;
 }
 
+export const MAX_BILATERAL_RATINGS = 14;
+
 const normalizeMuscleGroup = (value: string) =>
   value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('en-US');
 
@@ -196,8 +198,10 @@ export function calculateCombinedRating(inputRatings: DisabilityRating[]): Combi
   if (eligible.length < 2) {
     return { ...ordinary, ordinary, steps: buildSteps(ratings, ordinary, ordinary) };
   }
-  if (eligible.length > 20) {
-    throw new RangeError('At most 20 bilateral-eligible ratings can be compared exactly.');
+  if (eligible.length > MAX_BILATERAL_RATINGS) {
+    throw new RangeError(
+      `At most ${MAX_BILATERAL_RATINGS} bilateral-eligible ratings can be compared exactly.`,
+    );
   }
 
   const allIds = new Set(eligible.map(({ id }) => id));

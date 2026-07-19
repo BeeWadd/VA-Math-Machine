@@ -1,6 +1,8 @@
 import { type FormEvent, useMemo, useRef, useState } from 'react';
 import {
   estimateBenefits,
+  isRateReviewDue,
+  MAX_BILATERAL_ENTRIES,
   RATE_METADATA,
   type BilateralCategory,
   type CalculatorEntry,
@@ -9,7 +11,6 @@ import {
 } from './lib/app-calculator';
 
 const MAX_ENTRIES = 30;
-const MAX_BILATERAL_ENTRIES = 20;
 const MAX_LABEL_LENGTH = 80;
 const PERCENTAGES = Array.from({ length: 11 }, (_, index) => index * 10);
 
@@ -65,7 +66,7 @@ export function App() {
     [entries, dependents],
   );
 
-  const isRateReviewDue = new Date() >= new Date(`${RATE_METADATA.reviewDueDate}T00:00:00`);
+  const rateReviewDue = isRateReviewDue();
 
   function addEntry(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -177,7 +178,7 @@ export function App() {
           claims advice.
         </aside>
 
-        {isRateReviewDue && (
+        {rateReviewDue && (
           <aside className="notice" role="alert">
             Compensation data reached its scheduled review date on{' '}
             {RATE_METADATA.reviewDueDate}. Payment estimates are disabled until the table is
@@ -232,7 +233,8 @@ export function App() {
                   <p className="help" id="bilateral-help">
                     Use only for paired upper extremities, paired lower extremities, or the same
                     paired skeletal muscle group under 38 C.F.R. § 4.26. Both sides must be
-                    compensable.
+                    compensable. Exact comparison is limited to {MAX_BILATERAL_ENTRIES}{' '}
+                    bilateral-classified ratings to keep the browser responsive.
                   </p>
                   <div className="field-grid three">
                     <div className="field">

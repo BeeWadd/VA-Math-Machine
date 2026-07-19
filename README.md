@@ -14,6 +14,8 @@ VA Math Machine is a privacy-conscious estimator for the Department of Veterans 
 
 The compensation estimate does not model Special Monthly Compensation, TDIU eligibility, offsets, apportionment, effective-date rules, staged ratings, pension, survivor benefits, or every dependency exception.
 
+The calculator accepts up to 30 assigned ratings. Exact § 4.26(d) subset comparison is limited to 14 bilateral-classified ratings so the calculation remains responsive; the interface fails closed instead of silently approximating above that limit.
+
 ## Authoritative sources
 
 - [38 C.F.R. § 4.25 — Combined Ratings Table](https://www.ecfr.gov/current/title-38/chapter-I/part-4/subpart-A/section-4.25)
