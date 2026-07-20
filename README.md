@@ -4,6 +4,10 @@ VA Math Machine is a privacy-conscious estimator for the Department of Veterans 
 
 > This is an independent educational tool. It is not affiliated with, endorsed by, or a substitute for a decision from the U.S. Department of Veterans Affairs. Results are estimates and are not legal, medical, or claims advice.
 
+## Live calculator
+
+Use the deployed application at [beewadd.github.io/VA-Math-Machine](https://beewadd.github.io/VA-Math-Machine/).
+
 ## What it calculates
 
 - Combined ratings using the whole-person method and the integer-by-integer semantics of 38 C.F.R. § 4.25 Table I
